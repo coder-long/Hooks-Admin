@@ -1,12 +1,19 @@
+/* eslint-disable prettier/prettier */
 import { defineConfig, loadEnv, ConfigEnv, UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { resolve } from "path";
+import path, { resolve } from "path";
 import { wrapperEnv } from "./src/utils/getEnv";
 import { visualizer } from "rollup-plugin-visualizer";
 import { createHtmlPlugin } from "vite-plugin-html";
 import viteCompression from "vite-plugin-compression";
 import eslintPlugin from "vite-plugin-eslint";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
+import electron, { onstart } from "vite-plugin-electron";
+import { rmSync } from "fs";
+
+rmSync(path.join(__dirname, 'dist'), { recursive: true, force: true }) // v14.14.0
+
+console.log(__dirname);
 
 // @see: https://vitejs.dev/config/
 export default defineConfig((mode: ConfigEnv): UserConfig => {
@@ -70,37 +77,67 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 			viteEnv.VITE_REPORT && visualizer(),
 			// * gzip compress
 			viteEnv.VITE_BUILD_GZIP &&
-				viteCompression({
-					verbose: true,
-					disable: false,
-					threshold: 10240,
-					algorithm: "gzip",
-					ext: ".gz"
-				})
-		],
-		esbuild: {
-			pure: viteEnv.VITE_DROP_CONSOLE ? ["console.log", "debugger"] : []
-		},
+			viteCompression({
+				verbose: true,
+				disable: false,
+				threshold: 10240,
+				algorithm: "gzip",
+				ext: ".gz"
+			}),
+			electron({
+				main: {
+					entry: 'electron/main/index.ts',
+					vite: {
+						build: {
+							// For Debug
+							sourcemap: true,
+							outDir: 'dist/electron/main',
+						},
+						// Will start Electron via VSCode Debug
+						plugins: [process.env.VSCODE_DEBUG ? onstart() : null],
+					},
+				},
+				preload: {
+					input: {
+						// You can configure multiple preload scripts here
+						index: path.join(__dirname, 'electron/preload/index.ts'),
+					},
+					vite: {
+						build: {
+							// For Debug
+							sourcemap: 'inline',
+							outDir: 'dist/electron/preload',
+						}
+					},
+				},
+				// Enables use of Node.js API in the Electron-Renderer
+				// https://github.com/electron-vite/vite-plugin-electron/tree/main/packages/electron-renderer#electron-renderervite-serve
+				renderer: {},
+			}),
+		]
+		// esbuild: {
+		// 	pure: viteEnv.VITE_DROP_CONSOLE ? ["console.log", "debugger"] : []
+		// },
 		// build configure
-		build: {
-			outDir: "dist",
-			// esbuild 打包更快，但是不能去除 console.log，去除 console 使用 terser 模式
-			minify: "esbuild",
-			// minify: "terser",
-			// terserOptions: {
-			// 	compress: {
-			// 		drop_console: viteEnv.VITE_DROP_CONSOLE,
-			// 		drop_debugger: true
-			// 	}
-			// },
-			rollupOptions: {
-				output: {
-					// Static resource classification and packaging
-					chunkFileNames: "assets/js/[name]-[hash].js",
-					entryFileNames: "assets/js/[name]-[hash].js",
-					assetFileNames: "assets/[ext]/[name]-[hash].[ext]"
-				}
-			}
-		}
+		// build: {
+		// 	outDir: "dist",
+		// 	// esbuild 打包更快，但是不能去除 console.log，去除 console 使用 terser 模式
+		// 	minify: "esbuild",
+		// 	// minify: "terser",
+		// 	// terserOptions: {
+		// 	// 	compress: {
+		// 	// 		drop_console: viteEnv.VITE_DROP_CONSOLE,
+		// 	// 		drop_debugger: true
+		// 	// 	}
+		// 	// },
+		// 	rollupOptions: {
+		// 		output: {
+		// 			// Static resource classification and packaging
+		// 			chunkFileNames: "assets/js/[name]-[hash].js",
+		// 			entryFileNames: "assets/js/[name]-[hash].js",
+		// 			assetFileNames: "assets/[ext]/[name]-[hash].[ext]"
+		// 		}
+		// 	}
+		// }
 	};
 });

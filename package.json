@@ -2,12 +2,14 @@
 	"name": "react",
 	"private": true,
 	"version": "0.0.1",
+	"main": "dist/electron/main/index.js",
 	"scripts": {
 		"dev": "vite",
 		"serve": "vite",
-		"build:dev": "tsc && vite build --mode development",
-		"build:test": "tsc && vite build --mode test",
-		"build:pro": "tsc && vite build --mode production",
+		"build": "tsc && vite build && electron-builder",
+		"build:dev": "tsc && vite build --mode development && electron-builder",
+		"build:test": "tsc && vite build --mode test && electron-builder",
+		"build:pro": "tsc && vite build --mode production && electron-builder",
 		"preview": "vite preview",
 		"lint:eslint": "eslint --fix --ext .js,.ts,.tsx ./src",
 		"lint:prettier": "prettier --write --loglevel warn \"src/**/*.{js,ts,json,tsx,css,less,scss,html,md}\"",
@@ -55,6 +57,8 @@
 		"autoprefixer": "^10.4.7",
 		"commitizen": "^4.2.4",
 		"cz-git": "^1.3.4",
+		"electron": "^20.0.2",
+		"electron-builder": "^23.3.3",
 		"eslint": "^8.17.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-prettier": "^4.0.0",
@@ -73,8 +77,9 @@
 		"stylelint-config-standard": "^26.0.0",
 		"stylelint-less": "^1.0.6",
 		"typescript": "^4.6.3",
-		"vite": "^2.9.9",
+		"vite": "^2.9.15",
 		"vite-plugin-compression": "^0.5.1",
+		"vite-plugin-electron": "^0.9.2",
 		"vite-plugin-eslint": "^1.6.1",
 		"vite-plugin-html": "^3.2.0",
 		"vite-plugin-svg-icons": "^2.0.1"
@@ -82,6 +87,13 @@
 	"config": {
 		"commitizen": {
 			"path": "node_modules/cz-git"
+		}
+	},
+	"debug": {
+		"env": {
+			"VITE_DEV_SERVER_HOSTNAME": "127.0.0.1",
+			"VITE_DEV_SERVER_PORT": 7777,
+			"VITE_DEV_SERVER_URL": "http://127.0.0.1:7777"
 		}
 	}
 }
