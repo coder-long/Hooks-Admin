@@ -3,6 +3,11 @@
 	"private": true,
 	"version": "0.0.1",
 	"main": "dist/electron/main/index.js",
+	"description": "This My App.",
+	"author": {
+		"name": "me",
+		"email": "helong@ciandt.com"
+	},
 	"scripts": {
 		"dev": "vite",
 		"serve": "vite",
